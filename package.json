@@ -6,6 +6,7 @@
   "main": "main.js",
   "scripts": {
     "dev": "tsx scripts/dev.ts",
+    "build": "tsx scripts/build.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
