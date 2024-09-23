@@ -1,7 +1,8 @@
-import { App, Plugin, PluginSettingTab, requestUrl, Setting } from 'obsidian';
-import { CreateItemOptions, MangaChapterData, MangaReaderSettings } from './types';
+import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { MangaReaderSettings } from './types';
 import http from 'http';
 import { createServer } from './server';
+import { handlePost } from './handler';
 
 const DEFAULT_SETTINGS: MangaReaderSettings = {
   host: '127.0.0.1',
@@ -12,6 +13,7 @@ let server:http.Server|undefined
 
 export default class MangaReader extends Plugin {
   settings!: MangaReaderSettings;
+  _app!: App;
 
   async onunload(): Promise<void> {
     if (server) {
@@ -21,11 +23,14 @@ export default class MangaReader extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
+    this._app = this.app;
 
     this.addSettingTab(new MangaReaderSettingsTab(this.app, this))
 
     // Create the server
-    server = createServer(this.app);
+    server = createServer({
+      post: handlePost(this.app),
+    });
 
     // Specify the port and host
     const {
@@ -35,7 +40,7 @@ export default class MangaReader extends Plugin {
 
     // Start the server
     server.listen(port, host, () => {
-      console.log(`Manga reader listeing at http://${host}:${port}/`);
+      console.log(`Manga reader listening at http://${host}:${port}/`);
     });
   }
 

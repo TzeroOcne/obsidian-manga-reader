@@ -1,3 +1,5 @@
+export * from './https';
+
 export type MangaReaderSettings = {
   host?: string,
   port?: number,
