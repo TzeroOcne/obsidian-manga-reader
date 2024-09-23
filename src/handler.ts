@@ -34,7 +34,16 @@ export function handlePost(app: App) {
     );
 
     const filePath = `${chapterFolderPath}/Chapter.md`;
-    const content = fileList.join('\n');
+    const content = [
+      '---',
+      'id: Chapter',
+      'aliases: ',
+      'tags: ',
+      'cssclasses:',
+      '  - manga-chapter',
+      '---',
+      ...fileList,
+    ].join('\n');
     const file = app.vault.getFileByPath(filePath);
     if (file) {
       await app.vault.modify(file, content);
