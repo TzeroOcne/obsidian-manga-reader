@@ -1,0 +1,10 @@
+{
+	"id": "manga-reader",
+	"name": "Manga Reader",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Manga reading helper",
+	"author": "Tzero Ocne",
+	"authorUrl": "https://github.com/TzeroOcne",
+	"isDesktopOnly": true
+}
