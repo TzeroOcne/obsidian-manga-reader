@@ -13,7 +13,6 @@ let server:http.Server|undefined
 
 export default class MangaReader extends Plugin {
   settings!: MangaReaderSettings;
-  _app!: App;
 
   async onunload(): Promise<void> {
     if (server) {
@@ -23,7 +22,6 @@ export default class MangaReader extends Plugin {
 
   async onload(): Promise<void> {
     await this.loadSettings();
-    this._app = this.app;
 
     this.addSettingTab(new MangaReaderSettingsTab(this.app, this))
 
