@@ -29,7 +29,7 @@ export function handlePost(app: App) {
         } else {
           file = await app.vault.createBinary(filePath, fileData);
         }
-        return `![${file.name}](${file.path.replace(/ /g, '%20')})`;
+        return `![${file.name}](${encodeURI(file.path)})`;
       })
     );
 
