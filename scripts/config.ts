@@ -1,8 +1,10 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import { BuildOptions, InlineConfig } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { BuildOptions, InlineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import builtins from 'builtin-modules';
+import { normalizePath } from 'vite';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -12,6 +14,20 @@ export const baseConfig:InlineConfig = {
   root,
   plugins: [
     nodePolyfills(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: normalizePath(path.resolve(
+            root,
+            'node_modules',
+            'sql.js',
+            'dist',
+            'sql-wasm.wasm',
+          )),
+          dest: path.resolve(root, 'static'),
+        },
+      ],
+    }),
   ],
   resolve: {
     alias: {
@@ -21,6 +37,7 @@ export const baseConfig:InlineConfig = {
 };
 
 export const baseBuildConfig:BuildOptions = {
+  sourcemap: 'inline',
   lib: {
     entry: path.resolve(root, 'src/main.ts'),
     name: 'main',
@@ -38,6 +55,7 @@ export const baseBuildConfig:BuildOptions = {
     },
     external: [
       'obsidian',
+      'electron',
       ...builtins,
     ],
   },

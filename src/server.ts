@@ -1,5 +1,18 @@
-import http, { IncomingMessage } from "http";
-import { Handler, MangaChapterData } from "./types";
+import http, { IncomingMessage } from 'http';
+import { Handler, MangaChapterData } from './types';
+import path from 'path';
+import fs from 'fs';
+
+// Set MIME types
+const mimeTypes: { [key: string]: string } = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.wasm': 'application/wasm',  // Correct MIME type for WebAssembly
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+};
 
 // Function to parse request body as JSON
 const parseRequestBody = <T>(req: IncomingMessage): Promise<T> => {
@@ -24,7 +37,31 @@ const parseRequestBody = <T>(req: IncomingMessage): Promise<T> => {
   });
 };
 
-export const createServer = (handler: Handler) => {
+// Function to serve static files
+const serveStaticFile = (req: IncomingMessage, res: http.ServerResponse, staticFolder: string) => {
+  const requestedPath = req.url?.replace(/^\/static/, '') || '/';
+  const filePath = path.join(staticFolder, requestedPath);
+  
+
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('404 Not Found');
+      return;
+    }
+
+    // Get the file extension and set the appropriate Content-Type header
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+    res.writeHead(200, { 'Content-Type': contentType });
+
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res); // Pipe file stream to response
+  });
+};
+
+export const createServer = (handler: Handler, staticFolder = path.join(__dirname, 'static')) => {
   const server = http.createServer(async (req, res) => {
     // Set CORS headers to allow any origin
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -35,6 +72,12 @@ export const createServer = (handler: Handler) => {
     if (req.method === 'OPTIONS') {
       res.writeHead(204);
       res.end();
+      return;
+    }
+
+    // Serve static files if request URL starts with '/static'
+    if (req.url?.startsWith('/static') && req.method === 'GET') {
+      serveStaticFile(req, res, staticFolder);
       return;
     }
 
@@ -49,7 +92,7 @@ export const createServer = (handler: Handler) => {
     res.end(JSON.stringify({
       code: 'SUCCESS',
     }));
-  })
+  });
 
   return server;
 };

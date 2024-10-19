@@ -15,7 +15,10 @@ export type MangaChapterData = {
   group: string,
   title: string,
   chapter: string,
+  chapterNumber: string,
   content: MangaPage[],
+  chapterLink: string,
+  nextChapterLink: string,
 };
 
 export type CreateItemOptions = {
