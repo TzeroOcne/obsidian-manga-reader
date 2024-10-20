@@ -4,7 +4,7 @@ import { baseBuildConfig, baseConfig } from './config';
 await build({
   ...baseConfig,
   build: {
-    minify: true,
+    minify: false,
     ...baseBuildConfig,
   },
 });
