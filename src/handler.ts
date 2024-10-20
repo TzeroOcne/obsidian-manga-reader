@@ -1,8 +1,11 @@
-import { App, requestUrl } from "obsidian";
-import { MangaChapterData } from "./types";
-import { createFolderIfNotExist } from "./util";
+import { App, requestUrl } from 'obsidian';
+import { MangaChapterData } from './types';
+import { createFolderIfNotExist } from './util';
 
-export function handlePost(app: App) {
+export const handlePost = (
+  app: App,
+  map: Record<string, string>,
+) => {
   return async (body: MangaChapterData) => {
     const chapterFolderPath = [
       'entries',
@@ -17,32 +20,40 @@ export function handlePost(app: App) {
     const fileList = await Promise.all(body.content.map(async ({
       source: fileurl,
     }) => {
-        const fileName = fileurl.split('/').pop()!;
-        const {
-          arrayBuffer: fileData,
-        } = await requestUrl(fileurl);
+      const fileName = fileurl.split('/').pop()!;
+      const {
+        arrayBuffer: fileData,
+      } = await requestUrl(fileurl);
 
-        const filePath = `${resourceFolderPath}/${fileName}`;
-        let file = app.vault.getFileByPath(filePath);
-        if (file) {
-          await app.vault.modifyBinary(file, fileData);
-        } else {
-          file = await app.vault.createBinary(filePath, fileData);
-        }
-        return `![${file.name}](${encodeURI(file.path)})`;
-      })
+      const filePath = `${resourceFolderPath}/${fileName}`;
+      let file = app.vault.getFileByPath(filePath);
+      if (file) {
+        await app.vault.modifyBinary(file, fileData);
+      } else {
+        file = await app.vault.createBinary(filePath, fileData);
+      }
+      return `![${file.name}](${encodeURI(file.path)})`;
+    }),
     );
 
     const filePath = `${chapterFolderPath}/Chapter.md`;
+    map[body.chapterLink] = filePath;
     const content = [
       '---',
       `id: ${body.chapterLink}`,
+      'tags:',
+      '  - manga-chapter',
       'cssclasses:',
       '  - manga-chapter',
       '---',
       ...fileList,
       '',
-      `[[${body.nextChapterLink}|Next]]`,
+      `<button id="prev-button" name="${body.prevChapterLink}">`,
+      '  Prev',
+      '</button>',
+      `<button id="next-button" name="${body.nextChapterLink}">`,
+      '  Next',
+      '</button>',
     ].join('\n');
     const file = app.vault.getFileByPath(filePath);
     if (file) {
@@ -50,5 +61,5 @@ export function handlePost(app: App) {
     } else {
       await app.vault.create(filePath, content);
     }
-  }
-}
+  };
+};

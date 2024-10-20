@@ -1,6 +1,6 @@
-import globals from "globals";
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
+import globals from 'globals';
+import pluginJs from '@eslint/js';
+import tseslint from 'typescript-eslint';
 import stylistic from '@stylistic/eslint-plugin';
 
 /**
@@ -16,49 +16,54 @@ import stylistic from '@stylistic/eslint-plugin';
  * */
 /** @type {StylisticRules} */
 const stylisticRules = {
-  "@stylistic/semi": [
-    "error",
-    "always",
+  '@stylistic/semi': [
+    'error',
+    'always',
   ],
-  "@stylistic/comma-dangle": [
-    "error",
-    "always-multiline",
+  '@stylistic/comma-dangle': [
+    'error',
+    'always-multiline',
   ],
-  "@stylistic/indent": [
-    "error",
+  '@stylistic/indent': [
+    'error',
     2,
   ],
-  "@stylistic/quotes": [
-    "error",
-    "single",
+  '@stylistic/quotes': [
+    'error',
+    'single',
   ],
 };
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-  {files: ["**/*.{js,mjs,cjs,ts}"]},
+  {
+    ignores: [
+      'main.js',
+    ],
+  },
+  {files: ['**/*.{js,mjs,cjs,ts}']},
   {languageOptions: { globals: globals.browser }},
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   ...tseslint.config({
     rules: {
       '@typescript-eslint/no-unused-vars': [
-        "error",
+        'error',
         {
-          "args": "all",
-          "argsIgnorePattern": "^_",
-          "caughtErrors": "all",
-          "caughtErrorsIgnorePattern": "^_",
-          "destructuredArrayIgnorePattern": "^_",
-          "varsIgnorePattern": "^_",
-          "ignoreRestSiblings": true
-        }
+          'args': 'all',
+          'argsIgnorePattern': '^_',
+          'caughtErrors': 'all',
+          'caughtErrorsIgnorePattern': '^_',
+          'destructuredArrayIgnorePattern': '^_',
+          'varsIgnorePattern': '^_',
+          'ignoreRestSiblings': true,
+        },
       ],
     },
   }),
   {
     plugins: {
-      '@stylistic': stylistic
+      '@stylistic': stylistic,
     },
     rules: stylisticRules,
   },

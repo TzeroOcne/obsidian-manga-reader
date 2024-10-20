@@ -18,6 +18,7 @@ export type MangaChapterData = {
   chapterNumber: string,
   content: MangaPage[],
   chapterLink: string,
+  prevChapterLink: string,
   nextChapterLink: string,
 };
 

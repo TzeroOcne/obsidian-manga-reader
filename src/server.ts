@@ -1,5 +1,5 @@
 import http, { IncomingMessage } from 'http';
-import { Handler, MangaChapterData } from './types';
+import { CreateServerOptions, Handler, MangaChapterData } from './types';
 import path from 'path';
 import fs from 'fs';
 
@@ -61,7 +61,12 @@ const serveStaticFile = (req: IncomingMessage, res: http.ServerResponse, staticF
   });
 };
 
-export const createServer = (handler: Handler, staticFolder = path.join(__dirname, 'static')) => {
+export const createServer = (
+  handler: Handler,
+  {
+    staticFolder = path.join(__dirname, 'static'),
+  }: CreateServerOptions,
+) => {
   const server = http.createServer(async (req, res) => {
     // Set CORS headers to allow any origin
     res.setHeader('Access-Control-Allow-Origin', '*');
