@@ -48,10 +48,10 @@ export const handlePost = (
       '---',
       ...fileList,
       '',
-      `<button id="prev-button" name="${body.prevChapterLink}">`,
+      `<button id="prev-button" data-target="${body.prevChapterLink}">`,
       '  Prev',
       '</button>',
-      `<button id="next-button" name="${body.nextChapterLink}">`,
+      `<button id="next-button" data-target="${body.nextChapterLink}">`,
       '  Next',
       '</button>',
     ].join('\n');

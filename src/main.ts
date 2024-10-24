@@ -1,5 +1,5 @@
 import http from 'http';
-import { App, FileSystemAdapter, FileView, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, FileSystemAdapter, FileView, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
 import path from 'path';
 import { handlePost } from './handler';
 import { createServer } from './server';
@@ -76,6 +76,45 @@ export default class MangaReader extends Plugin {
     const map:Record<string, string> = await this.loadData() ?? {};
     this.map = map;
 
+    const tryOpenChapter = async (name: string) => {
+      if (!(name in map)) {
+        throw new Error('Target chapter data not found');
+      }
+      const targetPath = map[name];
+      {
+        const targetOpenedLeaf = await (new Promise<WorkspaceLeaf|undefined>((resolve) => {
+          this.app.workspace.iterateAllLeaves((leaf) => {
+            if (!(leaf.view instanceof FileView)) {
+              return;
+            }
+            const { file } = leaf.view;
+            if (!file) {
+              return;
+            }
+            if (file.path !== targetPath) {
+              return;
+            }
+
+            resolve(leaf);
+          });
+
+          resolve(undefined);
+        }));
+
+        if (targetOpenedLeaf) {
+          return this.app.workspace.setActiveLeaf(targetOpenedLeaf);
+        }
+      }
+
+      const targetFile = this.app.vault.getFileByPath(targetPath);
+      if (!targetFile) {
+        return console.error('Target chapter not found');
+      }
+
+      const activeLeaf = this.app.workspace.getLeaf();
+      return activeLeaf.openFile(targetFile);
+    };
+
     this.registerMarkdownPostProcessor((element, context) => {
       if (!context.frontmatter) {
         return;
@@ -90,52 +129,17 @@ export default class MangaReader extends Plugin {
         return;
       }
 
-      const tryOpenChapter = async (name: string) => {
-        if (!(name in map)) {
-          return console.error('Target chapter data not found');
-        }
-        const targetPath = map[name];
-        {
-          const targetOpenedLeaf = await (new Promise<WorkspaceLeaf|undefined>((resolve) => {
-            this.app.workspace.iterateAllLeaves((leaf) => {
-              if (!(leaf.view instanceof FileView)) {
-                return;
-              }
-              const { file } = leaf.view;
-              if (!file) {
-                return;
-              }
-              if (file.path !== targetPath) {
-                return;
-              }
-
-              resolve(leaf);
-            });
-
-            resolve(undefined);
-          }));
-
-          if (targetOpenedLeaf) {
-            return this.app.workspace.setActiveLeaf(targetOpenedLeaf);
-          }
-        }
-
-        const targetFile = this.app.vault.getFileByPath(targetPath);
-        if (!targetFile) {
-          return console.error('Target chapter not found');
-        }
-
-        const activeLeaf = this.app.workspace.getLeaf();
-        return activeLeaf.openFile(targetFile);
-      };
-
       const prevButton = <HTMLButtonElement>element.find('button#prev-button');
-      if (prevButton) {
-        prevButton.onclick = () => tryOpenChapter(prevButton.name);
+      if (prevButton?.dataset?.target) {
+        const { target } = prevButton.dataset;
+        prevButton.onclick = () => tryOpenChapter(target)
+          .catch((error) => new Notice(`Failed to go to previous chapter: ${error.message}`));
       }
       const nextButton = <HTMLButtonElement>element.find('button#next-button');
-      if (nextButton) {
-        nextButton.onclick = () => tryOpenChapter(nextButton.name);
+      if (nextButton?.dataset?.target) {
+        const { target } = nextButton.dataset;
+        nextButton.onclick = () => tryOpenChapter(target)
+          .catch((error) => new Notice(`Failed to go to next chapter: ${error.message}`));
       }
     });
 
